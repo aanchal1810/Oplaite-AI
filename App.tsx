@@ -9,6 +9,8 @@ import { PlanningView } from './components/PlanningView';
 import { TimerView } from './components/TimerView';
 import { SummaryView } from './components/SummaryView';
 
+// Redundant aistudio declaration removed to avoid conflict with the environment's pre-defined AIStudio type.
+
 const OpaliteLogo = ({ className = "w-12 h-12" }: { className?: string }) => (
   <svg className={className} viewBox="0 0 380 338" fill="none" xmlns="http://www.w3.org/2000/svg">
     <path d="M2.53101 111.959L14.531 3.95898L107.531 52.459L188.031 35.959L275.031 52.459L364.531 3.95898L377.031 111.959L347.031 246.959L320.531 297.959L188.031 334.459L55.031 297.959L33.031 246.959L2.53101 111.959Z" stroke="currentColor" strokeWidth="12"/>
@@ -61,6 +63,16 @@ const App: React.FC = () => {
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
+
+    // Safety fallback: Check for aistudio API key selection if in that environment
+    try {
+      if ((window as any).aistudio && !(await (window as any).aistudio.hasSelectedApiKey())) {
+        await (window as any).aistudio.openSelectKey();
+      }
+    } catch (e) {
+      console.warn("API Key selection utility unavailable or failed", e);
+    }
+
     setIsLoading(true);
     const mimeType = file.type || 'text/plain';
     const reader = new FileReader();
@@ -82,7 +94,16 @@ const App: React.FC = () => {
           units: [newUnit, ...prev.units],
           view: 'planning'
         }));
-      } catch (err) { alert("Integration failed. System error."); }
+      } catch (err: any) { 
+        console.error("Critical Analysis Error:", err);
+        const errMsg = err.message || "Unknown error";
+        if (errMsg.includes("Requested entity was not found")) {
+            alert("API Configuration issue detected. Please re-select your API key.");
+            if ((window as any).aistudio) await (window as any).aistudio.openSelectKey();
+        } else {
+            alert(`Analysis failed: ${errMsg}`); 
+        }
+      }
       finally { setIsLoading(false); }
     };
 
@@ -111,7 +132,10 @@ const App: React.FC = () => {
       const questions = await generateQuiz(segment.topic, activeUnit.material);
       setQuizQuestions(questions);
       setState(prev => ({ ...prev, view: 'game' }));
-    } catch (err) { alert("Recall initialization failure."); }
+    } catch (err: any) { 
+        console.error("Recall Protocol Error:", err);
+        alert("Recall session could not be initialized."); 
+    }
     finally { setIsLoading(false); }
   };
 
