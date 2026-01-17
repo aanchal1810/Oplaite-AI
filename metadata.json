@@ -1,0 +1,8 @@
+{
+  "name": "OPALITE AI",
+  "description": "An AI-powered Pomodoro study platform that generates personalized timetables from uploaded materials and uses a Subway Surfers-style lane runner game for active recall during breaks.",
+  "requestFramePermissions": [
+    "camera",
+    "microphone"
+  ]
+}

@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>OPALITE AI - Adaptive Mastery</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Reddit+Sans:wght@300;400;500;600;700;800&family=League+Spartan:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --app-bg: #fcfcfc;
+      --app-text: #000000;
+      --brutal-border: #000000;
+      --brutal-shadow: 6px 6px 0px 0px #000000;
+      --brutal-shadow-sm: 4px 4px 0px 0px #000000;
+      --nav-bg: #D1C4E9; /* Pastel Purple */
+      --btn-pink: #FFC1CC; /* Pastel Pink for Light Mode */
+      --btn-turquoise: #AFEEEE;
+      --status-done: #B2F2BB;
+      --status-redo: #FFB3BA;
+    }
+    .dark {
+      --app-bg: #0d0d0d;
+      --app-text: #ffffff;
+      --brutal-border: #888888; /* Grey border for dark mode as requested */
+      --brutal-shadow: 6px 6px 0px 0px #888888; /* Shadow MATCHES border color exactly */
+      --brutal-shadow-sm: 4px 4px 0px 0px #888888;
+      --btn-pink: #F48FB1; /* Vibrant pink for dark mode */
+    }
+    body {
+      font-family: 'Reddit Sans', sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: var(--app-bg);
+      color: var(--app-text);
+      transition: background-color 0.2s ease, color 0.2s ease;
+      height: 100vh;
+      width: 100vw;
+      overflow: hidden;
+      touch-action: none;
+    }
+    h1, h2, h3, h4 {
+      font-family: 'League Spartan', sans-serif;
+      letter-spacing: -0.02em;
+    }
+    .neo-brutal {
+      border: 4px solid var(--brutal-border) !important;
+      box-shadow: var(--brutal-shadow) !important;
+      background-color: var(--app-bg) !important;
+      color: var(--app-text) !important;
+    }
+    .neo-brutal-sm {
+      border: 4px solid var(--brutal-border) !important;
+      box-shadow: var(--brutal-shadow-sm) !important;
+    }
+    .btn-main {
+      background-color: var(--btn-pink) !important;
+      color: #000000 !important;
+      border: 4px solid var(--brutal-border) !important;
+      box-shadow: var(--brutal-shadow) !important;
+      transition: all 0.1s ease;
+    }
+    .btn-main:active {
+      transform: translate(2px, 2px);
+      box-shadow: 2px 2px 0px 0px var(--brutal-border) !important;
+    }
+    .btn-turquoise {
+      background-color: var(--btn-turquoise) !important;
+      color: #000000 !important;
+      border: 4px solid var(--brutal-border) !important;
+      box-shadow: var(--brutal-shadow) !important;
+    }
+    .btn-theme-toggle {
+      background-color: #ffffff !important;
+      color: #000000 !important;
+      border: 4px solid var(--brutal-border) !important;
+      box-shadow: var(--brutal-shadow-sm) !important;
+    }
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    
+    @keyframes logo-sync {
+      0% { transform: scale(1) rotate(0deg); }
+      50% { transform: scale(1.1) rotate(5deg); }
+      100% { transform: scale(1) rotate(0deg); }
+    }
+    .animate-logo-sync {
+      animation: logo-sync 3s infinite ease-in-out;
+    }
+
+    @keyframes float {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-20px); }
+    }
+    .animate-float {
+      animation: float 4s infinite ease-in-out;
+    }
+  </style>
+<script type="importmap">
+{
+  "imports": {
+    "react/": "https://esm.sh/react@^19.2.3/",
+    "react": "https://esm.sh/react@^19.2.3",
+    "react-dom/": "https://esm.sh/react-dom@^19.2.3/",
+    "@google/genai": "https://esm.sh/@google/genai@^1.37.0"
+  }
+}
+</script>
+</head>
+<body class="light">
+  <div id="root"></div>
+</body>
+</html>
