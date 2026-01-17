@@ -1,4 +1,3 @@
-
 import { GoogleGenAI, Type } from "@google/genai";
 import { StudyPlan, QuizQuestion, StudySegment, MaterialData } from "../types";
 
@@ -33,7 +32,8 @@ const getModelParts = (material: MaterialData, prompt: string) => {
 };
 
 export const analyzeMaterial = async (material: MaterialData): Promise<StudyPlan> => {
-  const ai = getAIClient();
+  // Create fresh instance right before call to ensure up-to-date API key
+  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
   const prompt = `You are an expert academic planner. Analyze the material and create a personalized study plan for ONE UNIT.
     
     STRICT CONSTRAINTS:
@@ -43,73 +43,75 @@ export const analyzeMaterial = async (material: MaterialData): Promise<StudyPlan
     4. Each segment must have an estimatedDuration (15-50 mins).
     5. Ensure the response is strictly valid JSON.`;
 
-  const response = await ai.models.generateContent({
-    model: 'gemini-3-flash-preview',
-    contents: [{ parts: getModelParts(material, prompt) }],
-    config: {
-      responseMimeType: "application/json",
-      responseSchema: {
-        type: Type.OBJECT,
-        properties: {
-          segments: {
-            type: Type.ARRAY,
-            items: {
-              type: Type.OBJECT,
-              properties: {
-                id: { type: Type.STRING },
-                topic: { type: Type.STRING },
-                unit: { type: Type.STRING },
-                importance: { type: Type.NUMBER },
-                estimatedDuration: { type: Type.NUMBER },
-                description: { type: Type.STRING },
-              },
-              required: ["id", "topic", "unit", "importance", "estimatedDuration", "description"]
-            }
-          }
-        },
-        required: ["segments"]
-      }
-    }
-  });
-
   try {
+    const response = await ai.models.generateContent({
+      model: 'gemini-3-pro-preview', // Upgraded for complex reasoning
+      contents: { parts: getModelParts(material, prompt) },
+      config: {
+        responseMimeType: "application/json",
+        responseSchema: {
+          type: Type.OBJECT,
+          properties: {
+            segments: {
+              type: Type.ARRAY,
+              items: {
+                type: Type.OBJECT,
+                properties: {
+                  id: { type: Type.STRING },
+                  topic: { type: Type.STRING },
+                  unit: { type: Type.STRING },
+                  importance: { type: Type.NUMBER },
+                  estimatedDuration: { type: Type.NUMBER },
+                  description: { type: Type.STRING },
+                },
+                required: ["id", "topic", "unit", "importance", "estimatedDuration", "description"]
+              }
+            }
+          },
+          required: ["segments"]
+        }
+      }
+    });
+
     return JSON.parse(response.text) as StudyPlan;
-  } catch (e) {
-    throw new Error("Failed to generate plan. AI response was malformed.");
+  } catch (e: any) {
+    console.error("Gemini Analysis Error Details:", e);
+    throw e;
   }
 };
 
 export const generateQuiz = async (topic: string, material: MaterialData, count: number = 6): Promise<QuizQuestion[]> => {
-  const ai = getAIClient();
+  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
   const prompt = `Generate ${count} active recall questions for: "${topic}". 
     Questions 1-2: Easy, 3-4: Medium, 5-6: Hard.
     Format: JSON Array of QuizQuestion objects with 3 options and correctIndex.`;
 
-  const response = await ai.models.generateContent({
-    model: 'gemini-3-flash-preview',
-    contents: [{ parts: getModelParts(material, prompt) }],
-    config: {
-      responseMimeType: "application/json",
-      responseSchema: {
-        type: Type.ARRAY,
-        items: {
-          type: Type.OBJECT,
-          properties: {
-            id: { type: Type.STRING },
-            question: { type: Type.STRING },
-            options: { type: Type.ARRAY, items: { type: Type.STRING }, minItems: 3, maxItems: 3 },
-            correctIndex: { type: Type.NUMBER },
-            difficulty: { type: Type.STRING, enum: ['easy', 'medium', 'hard'] }
-          },
-          required: ["id", "question", "options", "correctIndex", "difficulty"]
+  try {
+    const response = await ai.models.generateContent({
+      model: 'gemini-3-flash-preview',
+      contents: { parts: getModelParts(material, prompt) },
+      config: {
+        responseMimeType: "application/json",
+        responseSchema: {
+          type: Type.ARRAY,
+          items: {
+            type: Type.OBJECT,
+            properties: {
+              id: { type: Type.STRING },
+              question: { type: Type.STRING },
+              options: { type: Type.ARRAY, items: { type: Type.STRING }, minItems: 3, maxItems: 3 },
+              correctIndex: { type: Type.NUMBER },
+              difficulty: { type: Type.STRING, enum: ['easy', 'medium', 'hard'] }
+            },
+            required: ["id", "question", "options", "correctIndex", "difficulty"]
+          }
         }
       }
-    }
-  });
+    });
 
-  try {
     return JSON.parse(response.text) as QuizQuestion[];
-  } catch (e) {
+  } catch (e: any) {
+    console.error("Gemini Quiz Error Details:", e);
     return [];
   }
 };
