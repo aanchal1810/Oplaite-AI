@@ -1,8 +1,11 @@
 import { GoogleGenAI, Type } from "@google/genai";
 import { StudyPlan, QuizQuestion, StudySegment, MaterialData } from "../types";
 
-// Always use process.env.API_KEY directly as per requirements.
-const getAIClient = () => new GoogleGenAI({ apiKey: process.env.API_KEY });
+// Use import.meta.env for Vite (works with Vercel environment variables)
+// Vercel environment variables should be prefixed with VITE_ to be exposed to client
+const getAIClient = () => new GoogleGenAI({ 
+  apiKey: import.meta.env.VITE_GEMINI_API_KEY || import.meta.env.VITE_API_KEY 
+});
 
 const SUPPORTED_BINARY_MIMES = [
   'application/pdf',
@@ -33,7 +36,11 @@ const getModelParts = (material: MaterialData, prompt: string) => {
 
 export const analyzeMaterial = async (material: MaterialData): Promise<StudyPlan> => {
   // Create fresh instance right before call to ensure up-to-date API key
-  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+  const apiKey = import.meta.env.VITE_GEMINI_API_KEY || import.meta.env.VITE_API_KEY;
+  if (!apiKey) {
+    throw new Error('API key is not configured. Please set VITE_GEMINI_API_KEY in your environment variables.');
+  }
+  const ai = new GoogleGenAI({ apiKey });
   const prompt = `You are an expert academic planner. Analyze the material and create a personalized study plan for ONE UNIT.
     
     STRICT CONSTRAINTS:
@@ -45,7 +52,7 @@ export const analyzeMaterial = async (material: MaterialData): Promise<StudyPlan
 
   try {
     const response = await ai.models.generateContent({
-      model: 'gemini-3-pro-preview', // Upgraded for complex reasoning
+      model: 'gemini-2.5-flash', // Upgraded for complex reasoning
       contents: { parts: getModelParts(material, prompt) },
       config: {
         responseMimeType: "application/json",
@@ -81,7 +88,11 @@ export const analyzeMaterial = async (material: MaterialData): Promise<StudyPlan
 };
 
 export const generateQuiz = async (topic: string, material: MaterialData, count: number = 6): Promise<QuizQuestion[]> => {
-  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+  const apiKey = import.meta.env.VITE_GEMINI_API_KEY || import.meta.env.VITE_API_KEY;
+  if (!apiKey) {
+    throw new Error('API key is not configured. Please set VITE_GEMINI_API_KEY in your environment variables.');
+  }
+  const ai = new GoogleGenAI({ apiKey });
   const prompt = `Generate ${count} active recall questions for: "${topic}". 
     Questions 1-2: Easy, 3-4: Medium, 5-6: Hard.
     Format: JSON Array of QuizQuestion objects with 3 options and correctIndex.`;
